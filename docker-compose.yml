@@ -1,0 +1,74 @@
+services:
+
+  gateway:
+    build:
+      context: ./gateway
+
+    image: gateway:v1
+
+    container_name: gateway
+
+    ports:
+      - "80:80"
+
+    depends_on:
+      - product-service
+      - user-service
+      - auth-service
+
+    networks:
+      - cloudcart-network
+
+  product-service:
+    build:
+      context: ./services/product-service
+
+    image: product-service:v1
+
+    container_name: product-service
+
+    ports:
+      - "3003:3003"
+
+    env_file:
+      - ./services/product-service/.env
+
+    networks:
+      - cloudcart-network
+
+  user-service:
+    build:
+      context: ./services/user-service
+
+    image: user-service:v1
+
+    container_name: user-service
+
+    ports:
+      - "3004:3004"
+
+    env_file:
+      - ./services/user-service/.env
+
+    networks:
+      - cloudcart-network
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+
+    image: auth-service:v1
+
+    container_name: auth-service
+
+    ports:
+      - "3005:3005"
+
+    env_file:
+      - ./services/auth-service/.env
+
+    networks:
+      - cloudcart-network
+
+networks:
+  cloudcart-network:
