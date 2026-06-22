@@ -15,7 +15,8 @@ services:
       - product-service
       - user-service
       - auth-service
-
+      - cart-service
+      - order-service
     networks:
       - cloudcart-network
 
@@ -66,6 +67,40 @@ services:
 
     env_file:
       - ./services/auth-service/.env
+
+    networks:
+      - cloudcart-network
+
+  cart-service:
+    build:
+      context: ./services/cart-service
+
+    image: cart-service:v1
+
+    container_name: cart-service
+
+    ports:
+      - "3006:3006"
+
+    env_file:
+      - ./services/cart-service/.env
+
+    networks:
+      - cloudcart-network
+
+  order-service:
+    build:
+      context: ./services/order-service
+
+    image: order-service:v1
+
+    container_name: order-service
+
+    ports:
+      - "3007:3007"
+
+    env_file:
+      - ./services/order-service/.env
 
     networks:
       - cloudcart-network
