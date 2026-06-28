@@ -1,18 +1,12 @@
 # Environment files
-.env
 **/.env
 
 # Node modules
-node_modules/
-**/node_modules/
+**/node_modules
 
-# Logs
-*.log
-
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
+# Build artifacts
+dist
+build
 
 # OS files
 .DS_Store
