@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 import {
   Box,
@@ -16,25 +17,29 @@ import api from "../services/api";
 export default function Login() {
   const navigate = useNavigate();
 
+  // AuthContext
+  const { login: loginUser } = useAuth();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const login = async () => {
+  const handleLogin = async () => {
     try {
       const response = await api.post("/auth/login", {
         username,
         password,
       });
 
-      localStorage.setItem("token", response.data.token);
+      // Use AuthContext instead of localStorage directly
+      loginUser(response.data.token);
 
       navigate("/products");
     } catch (error) {
-  console.log("LOGIN ERROR:", error);
-  console.log("RESPONSE:", error.response?.data);
+      console.log("LOGIN ERROR:", error);
+      console.log("RESPONSE:", error.response?.data);
 
-  alert(error.response?.data?.message || "Login failed");
-}
+      alert(error.response?.data?.message || "Login failed");
+    }
   };
 
   return (
@@ -97,7 +102,7 @@ export default function Login() {
               fullWidth
               size="large"
               sx={{ mt: 3, borderRadius: 3 }}
-              onClick={login}
+              onClick={handleLogin}
             >
               Login
             </Button>
