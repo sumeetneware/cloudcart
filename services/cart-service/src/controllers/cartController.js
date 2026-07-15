@@ -40,31 +40,37 @@ exports.addToCart = async (req, res) => {
 };
 
 exports.getCart = async (req, res) => {
-
   try {
+    const user_id = req.user.id;
 
-    const user_id =
-      req.user.id;
-
-    const [rows] =
-      await db.query(
-        `SELECT * FROM cart_items
-         WHERE user_id = ?`,
-        [user_id]
-      );
+    const [rows] = await db.query(
+      `
+      SELECT
+        c.id,
+        c.user_id,
+        c.product_id,
+        c.quantity,
+        c.created_at,
+        p.name AS product_name,
+        p.price,
+        (c.quantity * p.price) AS subtotal
+      FROM cart_items c
+      JOIN cloudcart.products p
+        ON c.product_id = p.id
+      WHERE c.user_id = ?
+      `,
+      [user_id]
+    );
 
     res.json(rows);
 
   } catch (err) {
-
     console.error(err);
 
     res.status(500).json({
       message: "Database Error"
     });
-
   }
-
 };
 
 exports.removeFromCart = async (req, res) => {
