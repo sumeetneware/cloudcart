@@ -1,196 +1,89 @@
-import { useEffect, useState } from "react";
-
 import {
-  Container,
+  Card,
+  CardContent,
   Typography,
-  Button,
   Box,
-  Alert,
-  Paper,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Button,
+  Chip,
 } from "@mui/material";
 
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-import { Link } from "react-router-dom";
-
-import Navbar from "../components/Navbar";
-import CartItem from "../components/CartItem";
-
-import { useCart } from "../context/CartContext";
-
-import api from "../services/api";
-
-export default function Cart() {
-  const [items, setItems] = useState([]);
-  const [successOpen, setSuccessOpen] = useState(false);
-
-  const { clearCart } = useCart();
-
-  useEffect(() => {
-    fetchCart();
-  }, []);
-
-  const fetchCart = async () => {
-    try {
-      const response = await api.get("/cart/");
-      setItems(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const removeItem = async (id) => {
-    try {
-      await api.delete(`/cart/${id}`);
-      fetchCart();
-    } catch (error) {
-      console.error(error);
-      alert("Failed to remove item.");
-    }
-  };
-
-  const total = items.reduce(
-    (sum, item) => sum + Number(item.subtotal || 0),
-    0
-  );
-
-  const placeOrder = async () => {
-    try {
-      await api.post("/orders/", {
-        total_amount: total,
-      });
-
-      clearCart();
-      setItems([]);
-      setSuccessOpen(true);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to place order.");
-    }
-  };
-
+export default function CartItem({
+  item,
+  onRemove,
+}) {
   return (
-    <>
-      <Navbar />
+    <Card
+      sx={{
+        mb: 3,
+        borderRadius: 4,
+        transition: "0.3s",
 
-      <Container
-        maxWidth="lg"
-        sx={{ py: 5 }}
-      >
-        <Typography
-          variant="h3"
-          fontWeight="bold"
-          gutterBottom
+        "&:hover": {
+          boxShadow: 6,
+          transform: "translateY(-3px)",
+        },
+      }}
+    >
+      <CardContent>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          flexWrap="wrap"
+          gap={2}
         >
-          Your Cart
-        </Typography>
+          <Box>
+            <Typography
+              variant="h6"
+              fontWeight="bold"
+            >
+              📦 {item.product_name}
+            </Typography>
 
-        <Typography
-          color="text.secondary"
-          sx={{ mb: 4 }}
-        >
-          Review your selected items before checkout.
-        </Typography>
+            <Typography
+              color="text.secondary"
+              sx={{ mt: 1 }}
+            >
+              Unit Price:{" "}
+              <strong>
+                ₹{Number(item.price).toLocaleString()}
+              </strong>
+            </Typography>
 
-        {items.length === 0 ? (
-          <Alert severity="info">
-            Your cart is empty.
-          </Alert>
-        ) : (
-          <>
-            <Box mt={4}>
-              {items.map((item) => (
-                <CartItem
-                  key={item.id}
-                  item={item}
-                  onRemove={removeItem}
-                />
-              ))}
-            </Box>
-
-            <Paper
-              elevation={4}
+            <Chip
+              label={`Quantity: ${item.quantity}`}
+              color="primary"
+              size="small"
               sx={{
-                p: 4,
-                mt: 4,
-                borderRadius: 4,
+                mt: 2,
+                mr: 1,
               }}
-            >
-              <Typography
-                variant="h5"
-                fontWeight="bold"
-              >
-                Total Amount
-              </Typography>
+            />
 
-              <Typography
-                variant="h4"
-                color="primary"
-                sx={{ mt: 1 }}
-              >
-                ₹{total.toLocaleString()}
-              </Typography>
+            <Chip
+              label={`Subtotal: ₹${Number(
+                item.subtotal
+              ).toLocaleString()}`}
+              color="success"
+              size="small"
+              sx={{
+                mt: 2,
+              }}
+            />
+          </Box>
 
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  mt: 3,
-                  borderRadius: 3,
-                  px: 5,
-                }}
-                onClick={placeOrder}
-              >
-                Place Order
-              </Button>
-            </Paper>
-          </>
-        )}
-
-        <Dialog
-          open={successOpen}
-          onClose={() => setSuccessOpen(false)}
-        >
-          <DialogTitle>
-            <Box
-              display="flex"
-              alignItems="center"
-              gap={1}
-            >
-              <CheckCircleIcon color="success" />
-              Order Placed Successfully
-            </Box>
-          </DialogTitle>
-
-          <DialogContent>
-            Thank you for shopping with CloudCart.
-            <br />
-            Your order has been placed successfully.
-          </DialogContent>
-
-          <DialogActions>
-            <Button
-              component={Link}
-              to="/orders"
-              variant="contained"
-            >
-              View Orders
-            </Button>
-
-            <Button
-              component={Link}
-              to="/products"
-              onClick={() => setSuccessOpen(false)}
-            >
-              Continue Shopping
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </Container>
-    </>
+          <Button
+            color="error"
+            variant="outlined"
+            startIcon={<DeleteIcon />}
+            onClick={() => onRemove(item.id)}
+          >
+            Remove
+          </Button>
+        </Box>
+      </CardContent>
+    </Card>
   );
 }
