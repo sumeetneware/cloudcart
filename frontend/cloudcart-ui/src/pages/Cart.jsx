@@ -67,7 +67,6 @@ export default function Cart() {
   const placeOrder = async () => {
     try {
       await api.post("/orders/", {
-        user_id: 1,
         total_amount: total,
       });
 
