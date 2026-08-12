@@ -1,13 +1,18 @@
 import {
   Container,
   Typography,
-  Card,
-  CardContent
+  Alert,
+  Box,
+  Button,
 } from "@mui/material";
 
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
+
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
+import OrderCard from "../components/OrderCard";
 import api from "../services/api";
 
 export default function Orders() {
@@ -18,48 +23,92 @@ export default function Orders() {
   }, []);
 
   const fetchOrders = async () => {
-    const response =
-      await api.get("/orders/");
+    try {
+      const response =
+        await api.get("/orders/");
 
-    setOrders(response.data);
+      setOrders(response.data);
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   return (
     <>
       <Navbar />
 
-      <Container sx={{ mt: 5 }}>
+      <Container
+        maxWidth="lg"
+        sx={{ py: 5 }}
+      >
         <Typography
           variant="h3"
           fontWeight="bold"
           gutterBottom
         >
-          Order History
+          My Orders
         </Typography>
 
-        {orders.map((order) => (
-          <Card
-            key={order.id}
-            sx={{
-              mb: 3,
-              borderRadius: 3
-            }}
+        <Typography
+          color="text.secondary"
+          sx={{ mb: 4 }}
+        >
+          Track and manage your purchases.
+        </Typography>
+
+        {orders.length === 0 ? (
+          <Alert
+            severity="info"
+            sx={{ borderRadius: 3 }}
           >
-            <CardContent>
-              <Typography variant="h6">
-                Order #{order.id}
-              </Typography>
+            You haven't placed any orders yet.
+          </Alert>
+        ) : (
+          orders.map((order) => (
+            <OrderCard
+              key={order.id}
+              order={order}
+            />
+          ))
+        )}
 
-              <Typography>
-                Total: ₹{order.total_amount}
-              </Typography>
+        {orders.length === 0 && (
+          <Box
+            textAlign="center"
+            mt={5}
+          >
+            <ShoppingBagIcon
+              sx={{
+                fontSize: 80,
+                color: "grey.400",
+              }}
+            />
 
-              <Typography>
-                Status: {order.status}
-              </Typography>
-            </CardContent>
-          </Card>
-        ))}
+            <Typography
+              variant="h5"
+              mt={2}
+              gutterBottom
+            >
+              Start Shopping
+            </Typography>
+
+            <Typography
+              color="text.secondary"
+              mb={3}
+            >
+              Browse our products and place your first order.
+            </Typography>
+
+            <Button
+              component={Link}
+              to="/products"
+              variant="contained"
+              size="large"
+            >
+              Browse Products
+            </Button>
+          </Box>
+        )}
       </Container>
     </>
   );

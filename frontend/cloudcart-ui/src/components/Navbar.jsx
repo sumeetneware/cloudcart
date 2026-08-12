@@ -5,29 +5,37 @@ import {
   Button,
   Box,
   Badge,
-  IconButton,
-  Tooltip,
+  Avatar,
+  Stack,
 } from "@mui/material";
 
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import LogoutIcon from "@mui/icons-material/Logout";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import HomeIcon from "@mui/icons-material/Home";
 
 import { Link, useNavigate } from "react-router-dom";
-
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
-export default function Navbar({
-  mode = "light",
-  toggleTheme = () => {},
-}) {
+export default function Navbar() {
   const navigate = useNavigate();
 
   const { logout } = useAuth();
   const { count } = useCart();
+
+  // Read username from JWT payload
+  let username = "User";
+
+  try {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      username = payload.username || "User";
+    }
+  } catch (e) {}
 
   const handleLogout = () => {
     logout();
@@ -37,58 +45,45 @@ export default function Navbar({
   return (
     <AppBar
       position="sticky"
-      elevation={1}
+      elevation={2}
       color="inherit"
       sx={{
-        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid #e5e7eb",
       }}
     >
       <Toolbar>
+
         <Typography
           component={Link}
           to="/products"
-          variant="h4"
+          variant="h5"
           fontWeight="bold"
-          color="inherit"
+          color="primary"
           sx={{
             flexGrow: 1,
+            display: "flex",
+            alignItems: "center",
+            gap: 1,
             textDecoration: "none",
-            cursor: "pointer",
           }}
         >
-          ☁️ CloudCart
+          <StorefrontIcon />
+          CloudCart
         </Typography>
 
-        <Box
-          sx={{
-            display: "flex",
-            gap: 1,
-            alignItems: "center",
-          }}
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
         >
+
           <Button
             component={Link}
             to="/products"
             color="inherit"
+            startIcon={<HomeIcon />}
           >
             Products
-          </Button>
-
-          <Button
-            component={Link}
-            to="/cart"
-            color="inherit"
-            startIcon={
-              <Badge
-                badgeContent={count}
-                color="error"
-                invisible={count === 0}
-              >
-                <ShoppingCartIcon />
-              </Badge>
-            }
-          >
-            Cart
           </Button>
 
           <Button
@@ -100,38 +95,73 @@ export default function Navbar({
             Orders
           </Button>
 
-          <Tooltip
-            title={
-              mode === "light"
-                ? "Dark Mode"
-                : "Light Mode"
+          <Button
+            component={Link}
+            to="/cart"
+            color="inherit"
+            startIcon={
+              <Badge
+                badgeContent={count}
+                color="error"
+              >
+                <ShoppingCartIcon />
+              </Badge>
             }
           >
-            <IconButton
-              color="inherit"
-              onClick={toggleTheme}
+            Cart
+          </Button>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              ml: 2,
+              mr: 1,
+            }}
+          >
+            <Avatar
+              sx={{
+                width: 36,
+                height: 36,
+                bgcolor: "primary.main",
+                mr: 1,
+              }}
             >
-              {mode === "light" ? (
-                <DarkModeIcon />
-              ) : (
-                <LightModeIcon />
-              )}
-            </IconButton>
-          </Tooltip>
+              {username.charAt(0).toUpperCase()}
+            </Avatar>
+
+            <Box>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+              >
+                Welcome
+              </Typography>
+
+              <Typography
+                fontWeight="bold"
+                lineHeight={1.2}
+              >
+                {username}
+              </Typography>
+            </Box>
+          </Box>
 
           <Button
             color="error"
-            variant="outlined"
+            variant="contained"
             startIcon={<LogoutIcon />}
             onClick={handleLogout}
             sx={{
               borderRadius: 3,
-              ml: 1,
+              textTransform: "none",
             }}
           >
             Logout
           </Button>
-        </Box>
+
+        </Stack>
+
       </Toolbar>
     </AppBar>
   );

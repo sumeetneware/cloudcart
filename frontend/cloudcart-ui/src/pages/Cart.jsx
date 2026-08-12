@@ -11,9 +11,12 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Divider,
 } from "@mui/material";
 
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+
+import { useNavigate } from "react-router-dom";
 
 import Navbar from "../components/Navbar";
 import CartItem from "../components/CartItem";
@@ -26,6 +29,8 @@ export default function Cart() {
   const [items, setItems] = useState([]);
   const [successOpen, setSuccessOpen] =
     useState(false);
+
+  const navigate = useNavigate();
 
   const { clearCart } = useCart();
 
@@ -44,19 +49,20 @@ export default function Cart() {
     }
   };
 
-  const removeItem = (id) => {
-    setItems((prev) =>
-      prev.filter(
-        (item) => item.id !== id
-      )
-    );
-  };
+  const removeItem = async (id) => {
+  try {
+    await api.delete(`/cart/${id}`);
+    fetchCart();
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const total = items.reduce(
-    (sum, item) =>
-      sum + item.quantity * 1000,
-    0
-  );
+  (sum, item) =>
+    sum + Number(item.subtotal || 0),
+  0
+);
 
   const placeOrder = async () => {
     try {
@@ -66,10 +72,14 @@ export default function Cart() {
       });
 
       clearCart();
+
       setItems([]);
+
       setSuccessOpen(true);
+
     } catch (error) {
       console.error(error);
+
       alert(
         "Failed to place order"
       );
@@ -89,14 +99,14 @@ export default function Cart() {
           fontWeight="bold"
           gutterBottom
         >
-          Your Cart
+          Your Shopping Cart
         </Typography>
 
         <Typography
           color="text.secondary"
           sx={{ mb: 4 }}
         >
-          Review your selected items.
+          Review your items before checkout.
         </Typography>
 
         {items.length === 0 ? (
@@ -110,17 +120,15 @@ export default function Cart() {
                 <CartItem
                   key={item.id}
                   item={item}
-                  onRemove={
-                    removeItem
-                  }
+                  onRemove={removeItem}
                 />
               ))}
             </Box>
 
             <Paper
               sx={{
-                p: 4,
                 mt: 4,
+                p: 4,
                 borderRadius: 4,
               }}
             >
@@ -128,20 +136,29 @@ export default function Cart() {
                 variant="h5"
                 fontWeight="bold"
               >
-                Total: ₹
-                {total.toLocaleString()}
+                Order Summary
+              </Typography>
+
+              <Divider sx={{ my: 3 }} />
+
+              <Typography
+                variant="h4"
+                color="primary"
+                fontWeight="bold"
+              >
+                Total:
+                {" "}
+                ₹{total.toLocaleString()}
               </Typography>
 
               <Button
                 variant="contained"
                 size="large"
                 sx={{
-                  mt: 3,
+                  mt: 4,
                   borderRadius: 3,
                 }}
-                onClick={
-                  placeOrder
-                }
+                onClick={placeOrder}
               >
                 Place Order
               </Button>
@@ -151,9 +168,6 @@ export default function Cart() {
 
         <Dialog
           open={successOpen}
-          onClose={() =>
-            setSuccessOpen(false)
-          }
         >
           <DialogTitle>
             <Box
@@ -170,17 +184,25 @@ export default function Cart() {
           </DialogTitle>
 
           <DialogContent>
-            Your order has been placed
-            successfully.
+            Your order has been placed successfully.
           </DialogContent>
 
           <DialogActions>
             <Button
-              onClick={() =>
-                setSuccessOpen(
-                  false
-                )
-              }
+              variant="contained"
+              onClick={() => {
+                setSuccessOpen(false);
+                navigate("/orders");
+              }}
+            >
+              View Orders
+            </Button>
+
+            <Button
+              onClick={() => {
+                setSuccessOpen(false);
+                navigate("/products");
+              }}
             >
               Continue Shopping
             </Button>
