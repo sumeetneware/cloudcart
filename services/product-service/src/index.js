@@ -17,6 +17,13 @@ app.use(express.json());
 
 app.use(express.json());
 
+app.get("/health", (req, res) => {
+  res.json({
+    service: "product-service",
+    status: "UP"
+  });
+});
+
 app.use("/api", productRoutes);
 
 const PORT = process.env.PORT;
